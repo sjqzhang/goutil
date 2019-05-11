@@ -1,4 +1,4 @@
-package main
+package goutil
 
 
 import (
@@ -529,11 +529,3 @@ func (this *Common) GetClientIp(r *http.Request) string {
 }
 
 
-func main() {
-
-	cmap:=NewCommonMap(1)
-	cmap.Add("abc")
-
-	fmt.Println(len(cmap.Get()))
-
-}

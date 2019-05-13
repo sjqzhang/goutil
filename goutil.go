@@ -1,30 +1,33 @@
 package goutil
 
-
 import (
-	"sync"
-	"fmt"
-	"log"
-	"encoding/json"
-	"io"
-	"encoding/base64"
-	"os"
-	"time"
-	"net/url"
-	"net"
+	"bytes"
+	"context"
 	"crypto/md5"
+	"crypto/rand"
 	"crypto/sha1"
-	"reflect"
+	"encoding/base64"
+	"encoding/json"
+	"errors"
+	"fmt"
+	"github.com/deckarep/golang-set"
+	"io"
 	"io/ioutil"
+	"log"
+	random "math/rand"
+	"net"
+	"net/http"
+	"net/url"
+	"os"
+	"os/exec"
+	"path/filepath"
+	"reflect"
 	"regexp"
 	"runtime/debug"
-	"path/filepath"
-	"github.com/deckarep/golang-set"
 	"strings"
-	"errors"
-	random "math/rand"
-	"crypto/rand"
-	"net/http"
+	"sync"
+	"syscall"
+	"time"
 )
 
 type CommonMap struct {
@@ -38,7 +41,6 @@ type Tuple struct {
 }
 
 type Common struct {
-
 }
 
 func NewCommonMap(size int) *CommonMap {
@@ -200,7 +202,6 @@ func (s *CommonMap) Get() map[string]interface{} {
 	}
 	return m
 }
-
 
 func (this *Common) GetUUID() string {
 	b := make([]byte, 48)
@@ -527,5 +528,27 @@ func (this *Common) GetClientIp(r *http.Request) string {
 	}
 	return client_ip
 }
-
-
+func (this *Common) Exec(cmd []string, timeout int) (string, string, int) {
+	var out bytes.Buffer
+	duration := time.Duration(timeout) * time.Second
+	ctx, _ := context.WithTimeout(context.Background(), duration)
+	var path string
+	var command *exec.Cmd
+	command = exec.CommandContext(ctx, cmd[0], cmd[1:]...)
+	command.Stdin = os.Stdin
+	command.Stdout = &out
+	command.Stderr = &out
+	err := command.Run()
+	RemoveFile := func() {
+		if path != "" {
+			os.Remove(path)
+		}
+	}
+	defer RemoveFile()
+	status := command.ProcessState.Sys().(syscall.WaitStatus).ExitStatus()
+	if err != nil {
+		log.Println(err, cmd)
+		return "", err.Error(), -1
+	}
+	return out.String(), "", status
+}

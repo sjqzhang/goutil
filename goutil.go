@@ -532,23 +532,18 @@ func (this *Common) Exec(cmd []string, timeout int) (string, string, int) {
 	var out bytes.Buffer
 	duration := time.Duration(timeout) * time.Second
 	ctx, _ := context.WithTimeout(context.Background(), duration)
-	var path string
+
 	var command *exec.Cmd
 	command = exec.CommandContext(ctx, cmd[0], cmd[1:]...)
 	command.Stdin = os.Stdin
 	command.Stdout = &out
 	command.Stderr = &out
 	err := command.Run()
-	RemoveFile := func() {
-		if path != "" {
-			os.Remove(path)
-		}
-	}
-	defer RemoveFile()
-	status := command.ProcessState.Sys().(syscall.WaitStatus).ExitStatus()
 	if err != nil {
 		log.Println(err, cmd)
 		return "", err.Error(), -1
 	}
+	status := command.ProcessState.Sys().(syscall.WaitStatus).ExitStatus()
 	return out.String(), "", status
 }
+

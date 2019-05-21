@@ -528,11 +528,10 @@ func (this *Common) GetClientIp(r *http.Request) string {
 	}
 	return client_ip
 }
-func (this *Common) Exec(cmd []string, timeout int) (string, string, int) {
+func (this *Common) Exec(cmd []string, timeout int) (string, int) {
 	var out bytes.Buffer
 	duration := time.Duration(timeout) * time.Second
 	ctx, _ := context.WithTimeout(context.Background(), duration)
-
 	var command *exec.Cmd
 	command = exec.CommandContext(ctx, cmd[0], cmd[1:]...)
 	command.Stdin = os.Stdin
@@ -541,9 +540,9 @@ func (this *Common) Exec(cmd []string, timeout int) (string, string, int) {
 	err := command.Run()
 	if err != nil {
 		log.Println(err, cmd)
-		return "", err.Error(), -1
+		return  err.Error(), -1
 	}
 	status := command.ProcessState.Sys().(syscall.WaitStatus).ExitStatus()
-	return out.String(), "", status
+	return out.String(), status
 }
 

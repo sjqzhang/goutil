@@ -546,3 +546,72 @@ func (this *Common) Exec(cmd []string, timeout int) (string, int) {
 	return out.String(), status
 }
 
+func (this *Common) GetAllIpsV4() ([]string,error) {
+	var(
+		ips[] string
+		allIps[] string
+		err error
+	)
+	if allIps,err=this.GetAllIps();err!=nil {
+		return ips,err
+	}
+	for _,ip:=range allIps {
+		i:=this.Match("\\d+\\.\\d+\\.\\d+\\.\\d+",ip)
+		if len(i)>0 {
+			ips=append(ips,i[0])
+		}
+	}
+	return ips,nil
+}
+
+func (this *Common) GetAllIpsV6() ([]string,error) {
+	var(
+		ips[] string
+		allIps[] string
+		err error
+	)
+	if allIps,err=this.GetAllIps();err!=nil {
+		return ips,err
+	}
+	for _,ip:=range allIps {
+		i:=this.Match("[0-9a-z:]{15,}",ip)
+		if len(i)>0 {
+			ips=append(ips,i[0])
+		}
+	}
+	return ips,nil
+}
+func (this *Common) GetAllMacs() ([]string,error) {
+	var (
+		err error
+		interfaces[] net.Interface
+		macs[] string
+	)
+	if interfaces,err=net.Interfaces();err!=nil {
+		return macs,err
+	}
+	for _, v := range interfaces {
+		macs=append(macs, v.HardwareAddr.String())
+	}
+	return macs,nil
+}
+
+func (this *Common) GetAllIps() ([]string,error) {
+	var (
+		err error
+		interfaces[] net.Interface
+		ips[] string
+		addrs[] net.Addr
+	)
+	if interfaces,err=net.Interfaces();err!=nil {
+		return ips,err
+	}
+	for _, v := range interfaces {
+		if addrs,err=v.Addrs();err==nil {
+			for _,addr:=range addrs {
+				ips = append(ips,addr.String())
+			}
+		}
+	}
+	return ips,nil
+}

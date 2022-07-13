@@ -963,6 +963,7 @@ func (this *Common) Exec(cmd []string, timeout int) (string, int) {
 	err := command.Run()
 	if err != nil {
 		log.Println(err, cmd)
+		log.Println(out.String())
 		return err.Error(), -1
 	}
 	status := command.ProcessState.Sys().(syscall.WaitStatus).ExitStatus()
